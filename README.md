@@ -1,4 +1,4 @@
-[orthus.pdf](https://github.com/aazzaabidi/Orthrus/files/14377893/orthus.pdf)# Orthrus
+# Orthrus
 This code representes **Orthrus**,  a novel framework for land cover mapping that leverages multi-scale information and 2D encoding techniques to cope with satellite image time series information. The approach is depicted in  Figure~\ref{fig:method}, which sketches the flowchart of the process. The proposed framework consists of two stages: the first stage performs 2D Encoding using various techniques for each of the multi-scale information, while the second stage uses a dual branch Convolutional Neural Network to classify the encoded time series data. This framework  effectively captures both the pixel-level and object-level features of multivariate time series data, improving the accuracy of classification tasks.
 
 ![Screenshot-105](https://github.com/aazzaabidi/Orthrus/assets/73762433/adae2278-a540-4bb5-8b35-683089c04c0a)
