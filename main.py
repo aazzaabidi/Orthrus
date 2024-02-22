@@ -5,7 +5,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from sklearn.metrics import f1_score, cohen_kappa_score
 import matplotlib.pyplot as plt
 import numpy as np
-import model from models
+import resnet50 from models
 
 # Load the data
 # Assuming the data is in a format similar to the following:
