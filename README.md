@@ -45,8 +45,8 @@ Ensure you have the following dependencies installed:
 - `residual_2D_model.py`: Main code file containing the implementation of the ResNet-50 model.
 - `requirements.txt`: File listing all required dependencies for easy installation.
 
-### Acknowledgments
+### Citation
 
-This code is adapted from various sources, including TensorFlow/Keras documentation and ResNet papers. Special thanks to the TensorFlow and Keras communities for providing valuable resources and support.
 
-For any questions or issues, please contact [author's name/email].
+
+For any questions or issues, please contact aazzaabidi@gmail.com.
