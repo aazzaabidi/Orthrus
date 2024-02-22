@@ -1,15 +1,46 @@
-import os
-import cv2
-import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
-from pyts.approximation import PiecewiseAggregateApproximation as PAA
-from pyts.image import RecurrencePlot, MarkovTransitionField, GramianAngularField
+
 import sys
 sys.path.insert(1,"..")
+import matplotlib.pyplot as plt
+import random
+
+import os
+from torchvision import transforms
+import numpy as np
+from torchvision import transforms
+import albumentations as A
+from imgaug import augmenters as iaaa
+from PIL import Image
+import PIL, PIL.ImageOps, PIL.ImageEnhance, PIL.ImageDraw
+
+from mpl_toolkits.axes_grid1 import ImageGrid
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.validation import check_array
+from pyts.approximation import PiecewiseAggregateApproximation as PAA
+from sklearn.preprocessing import MinMaxScaler
+from matplotlib import cm
+import torch
+
+from pyts.datasets import load_gunpoint
+from pyts.image import RecurrencePlot, MarkovTransitionField, GramianAngularField
+from skimage.transform import resize
+import cv2
 
 
-class GADF(BaseEstimator, TransformerMixin):
-    def __init__(self, image_size=32, overlapping=False, scale=-1):
+# Load the dataset
+data = np.load('specify the data path')
+
+# Split the data into training and validation sets
+X_train, X_valid = train_test_split(data, test_size=0.2, random_state=42)
+
+# Standardize the data
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_valid = scaler.transform(X_valid)
+
+# Define the transformation methods
+def transform_gadf(data):
+     def __init__(self, image_size=32, overlapping=False, scale=-1):
         self.image_size = image_size
         self.overlapping = overlapping
         self.scale = scale
@@ -18,6 +49,7 @@ class GADF(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
+
         # Check input data
         X = check_array(X)
         # Shape parameters
@@ -40,45 +72,49 @@ class GADF(BaseEstimator, TransformerMixin):
                                                  X_scaled_sin,
                                                  n_features_new,
                                                  False)
-        return X_sin_scaled_outer - X_sin_scaled_outer
-
+        return X_sin_scaled_outer - X_scaled_sin_outer
     def _outer_stacked(self, arr, size, first=True):
         if first:
             return np.outer(arr[:size], arr[size:])
         else:
             return np.outer(arr[size:], arr[:size])
 
-def load_data_for_split(base_directory, split):
-    return np.load(os.path.join(base_directory, f'splits/reunion/train_X_pxl_{split}.npy'))
+def transform_gasf(data):
+    gasf = GramianAngularField()
 
-def create_directory(directory_path):
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
+def transform_mtf(data):
+   mtf = MarkovTransitionField()
 
-def transform_and_save_data(transformer, data, transformer_name, split, base_directory):
-    transformed_data = transformer.transform(data)
-    resized_data = list(map(lambda x: cv2.resize(x, (32, 32)).reshape(-1), transformed_data))
-    output_path = os.path.join(base_directory, f'transformation/reunion/{transformer_name}/train_X_pxl_{split}.npy')
-    create_directory(os.path.dirname(output_path))
-    np.save(output_path, np.array(resized_data))
-    print(f'Saved transformed data to {output_path}')
+def transform_rp(data):
+    rp= RecurrencePlot()
 
 
+# Create the folder if it doesn't exist
+folder_path = '/mnt/DATA/AZZA/3_pixel_object_2D/transformation/reunion/'
+if not os.path.exists(folder_path):
+    os.makedirs(folder_path)
 
-def load_data(output_path, split, feature):
-    return np.load(f"{data_dir}/{feature}/{feature}_X_{split}.npy")
+# Loop over the 5 splits
+for i in range(5):
+    # Load the data for the current split
+    valid_gadf = np.load(os.path.join(folder_path, f'GADF/valid_X_dev_{i}.npy'))
+    valid_gasf = np.load(os.path.join(folder_path, f'GASF/valid_X_dev_{i}.npy'))
+    valid_mtf = np.load(os.path.join(folder_path, f'MTF/valid_X_dev_{i}.npy'))
+    valid_rp = np.load(os.path.join(folder_path, f'RP/valid_X_dev_{i}.npy'))
 
-def save_combo_data(data_dir, split, combos):
-    np.save(f"{data_dir}/combo/train_X_combo_{split}.npy", combos)
+    # Transform and save GADF
+    gadf_resized = transform_gadf(valid_gadf)
+    np.save(os.path.join(folder_path, f'GADF/valid_X_dev_{i}.npy'), gadf_resized)
 
-def main():
-    features = ["MTF", "GASF", "GADF", "RP"]
-    splits = [1, 2, 3, 4, 5]
+    # Transform and save GASF
+    gasf_resized = transform_gasf(valid_gasf)
+    np.save(os.path.join(folder_path, f'GASF/valid_X_dev_{i}.npy'), gasf_resized)
 
-    for split in splits:
-        combos = []
-        for feature in features:
-            mtf_train = load_data(data_dir, split, feature)
-            combos.append(mtf_train)
-        save_combo_data(data_dir, split, np.stack(combos, axis=-1))
+    # Transform and save MTF
+    mtf_resized = transform_mtf(valid_mtf)
+    np.save(os.path.join(folder_path, f'MTF/valid_X_dev_{i}.npy'), mtf_resized)
+
+    # Transform and save RP
+    rp_resized = transform_rp(valid_rp)
+    np.save(os.path.join(folder_path, f'RP/valid_X_dev_{i}.npy'), rp_resized)
 
