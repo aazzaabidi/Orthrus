@@ -4,6 +4,9 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from pyts.approximation import PiecewiseAggregateApproximation as PAA
 from pyts.image import RecurrencePlot, MarkovTransitionField, GramianAngularField
+import sys
+sys.path.insert(1,"..")
+
 
 class GADF(BaseEstimator, TransformerMixin):
     def __init__(self, image_size=32, overlapping=False, scale=-1):
@@ -60,13 +63,22 @@ def transform_and_save_data(transformer, data, transformer_name, split, base_dir
     np.save(output_path, np.array(resized_data))
     print(f'Saved transformed data to {output_path}')
 
-def main():
-    base_directory = '/mnt/DATA/AZZA/3_pixel_object_2D'
-    splits = [1, 2, 3, 4, 5]
-    transformers = [GADF(), GramianAngularField(), MarkovTransitionField(), RecurrencePlot()]
-    transformer_names = ['GADF', 'GASF', 'MTF', 'RP']
 
-    for split, transformer, transformer_name in zip(splits, transformers, transformer_names):
-        print(f'----train split {split}----')
-        print('reading data')
-        data = load_data_
+
+def load_data(output_path, split, feature):
+    return np.load(f"{data_dir}/{feature}/{feature}_X_{split}.npy")
+
+def save_combo_data(data_dir, split, combos):
+    np.save(f"{data_dir}/combo/train_X_combo_{split}.npy", combos)
+
+def main():
+    features = ["MTF", "GASF", "GADF", "RP"]
+    splits = [1, 2, 3, 4, 5]
+
+    for split in splits:
+        combos = []
+        for feature in features:
+            mtf_train = load_data(data_dir, split, feature)
+            combos.append(mtf_train)
+        save_combo_data(data_dir, split, np.stack(combos, axis=-1))
+
